@@ -107,18 +107,18 @@ void init(){
 	glLightfv( GL_LIGHT1, GL_SPECULAR, specular );
 
 //	GLfloat position2[] = {0.0,1.0,0.0,0.0};
-//	GLfloat specular2[] = {0.1f, 0.1f, 0.1f, 0.1f};
-//	GLfloat diffuse2[] = {0.1f, 0.1f, 0.1f, 0.1f};
-//	GLfloat ambient2[] = {0.1f, 0.1f, 0.1f, 0.1f};
+	GLfloat specular2[] = {0.4f, 0.4f, 0.4f, 1.0f};
+	GLfloat diffuse2[] = {0.7f, 0.7f, 0.7f, 1.0f};
+	GLfloat ambient2[] = {0.0f, 0.0f, 0.0f, 1.0f};
 //	glLightfv(GL_LIGHT2, GL_POSITION, position2 );
-//	glLightfv(GL_LIGHT2, GL_AMBIENT, ambient2);
-//	glLightfv(GL_LIGHT2, GL_SPECULAR, specular2);
-//	glLightfv(GL_LIGHT2, GL_DIFFUSE, diffuse2);
+	glLightfv(GL_LIGHT2, GL_AMBIENT, ambient2);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, specular2);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, diffuse2);
 
 	glEnable( GL_LIGHTING );
 	glEnable( GL_LIGHT0 );
 	glEnable( GL_LIGHT1 );
-//	glEnable(GL_LIGHT2);
+	glEnable(GL_LIGHT2);
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 	glEnable( GL_COLOR_MATERIAL );
 
