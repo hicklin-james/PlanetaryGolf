@@ -17,11 +17,13 @@
 #ifndef GOLFBALL_H
 #define GOLFBALL_H
 #include <iostream>
+#include "imageloader.h"
 
 class GolfBall {
 public:
 	GolfBall(double, double, double);
 
+	GLuint loadTexture(Image* image);
 
 	bool fireBall();
 	void drawBall(double startX, double startY, double startZ, double xx, double yy, double zz);
@@ -48,7 +50,8 @@ public:
 private:
 
 	bool resetIfNeccessary();
-
+	GLuint _textureId;
+	GLUquadric *quad;
 
 };
 

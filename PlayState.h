@@ -27,6 +27,8 @@ public:
 				        double xScale, double yScale, double zScale);
 	static CPlayState* GetInstance(CStateManager* pManager);
 
+	GLuint loadTexture(Image* image);
+
 	int score;
     std::vector<Planet> planets;
 
@@ -35,6 +37,7 @@ protected:
 	CPlayState(CStateManager* pManager);
 
 private:
-
+	GLuint _textureId;
+	GLUquadric *quad;
 };
 #endif

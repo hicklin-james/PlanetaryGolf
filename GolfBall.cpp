@@ -1,5 +1,7 @@
 #include "GolfBall.h"
 
+bool hasTexLoaded = false;
+
 // deceleration is constant
 double deceleration = 0.004;
 
@@ -19,17 +21,34 @@ GolfBall::GolfBall(double x, double y, double z ) {
 // Responsible for drawing a ball in the world
 void GolfBall::drawBall(double x, double y, double z, double lx, double ly, double lz) {
 
+	if (!hasTexLoaded) {
+		Image* image = loadBMP("firetexture.bmp");
+		_textureId = loadTexture(image);
+		delete image;
+		hasTexLoaded = true;
+	}
+	quad = gluNewQuadric();
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, _textureId);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	
 	glPushMatrix();
 	// Always take the camera position into account
 	xPos = x+lx+xForTranslate;
 	yPos = y+ly+yForTranslate;
 	zPos = z+lz+zForTranslate;
 	glTranslatef(xPos,yPos,zPos);
-	glColor3f(0,1,0);
-	glutSolidSphere(0.1,100,100);
+	//glutSolidSphere(0.1,100,100);
+	gluQuadricTexture(quad, 1);
+	gluSphere(quad, 0.1, 100, 100);
 	glColor3f(1,1,1);
 	glPopMatrix();
 
+	glDisable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, NULL);
 	//std::cout << "Local ball vars: x = " << posx << " y = " << posy << " z = " << posz << "\n";
 
 
@@ -95,4 +114,21 @@ void GolfBall::hardReset() {
     vx = 0;
     vy = 0;
     vz = 0;
+}
+
+GLuint GolfBall::loadTexture(Image* image) {
+
+	GLuint textureId;
+
+	glGenTextures(1, &textureId);
+
+	glBindTexture(GL_TEXTURE_2D, textureId);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+		image->width, image->height,
+		0, GL_RGB, GL_UNSIGNED_BYTE,
+		image->pixels);
+
+	return textureId;
+
 }

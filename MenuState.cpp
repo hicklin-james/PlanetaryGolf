@@ -45,19 +45,19 @@ void CMenuState::mouse_callback(int button, int state, int x, int y) {
 
 		selectObjects(x, y);
 	    unsigned int i, j;
-
+		//std::cout << x << y << "\n";
 		//printf ("hits = %d\n", hits);
 		ptr = (GLuint *) selectBuf;
 		for (i = 0; i < hits; i++) { /*  for each hit  */
 		names = *ptr;
-		printf (" number of names for hit = %d\n", names); ptr++;
-		printf("  z1 is %g;", (float) *ptr/0x7fffffff); ptr++;
-		printf(" z2 is %g\n", (float) *ptr/0x7fffffff); ptr++;
-		printf ("   the name is ");
+		//printf (" number of names for hit = %d\n", names); ptr++;
+		//printf("  z1 is %g;", (float) *ptr/0x7fffffff); ptr++;
+		//printf(" z2 is %g\n", (float) *ptr/0x7fffffff); ptr++;
+		//printf ("   the name is ");
 		for (j = 0; j < names; j++) {     /*  for each name */
-			//if (*ptr == 1)
-			//	ChangeState(CPlayState::GetInstance(m_pStateManager));
-			printf ("%d ", *ptr); ptr++;
+			if (*ptr == 1)
+				ChangeState(CPlayState::GetInstance(m_pStateManager));
+			//printf ("%d ", *ptr); ptr++;
 		}
 		//printf ("\n");
 		}
@@ -68,13 +68,18 @@ void CMenuState::display_callback(void) {
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective( 70.0f, float(glutGet(GLUT_WINDOW_WIDTH))/float(glutGet(GLUT_WINDOW_HEIGHT)), 0.1f, 2000.0f );
+	gluPerspective( 90.0f, float(glutGet(GLUT_WINDOW_WIDTH))/float(glutGet(GLUT_WINDOW_HEIGHT)), 0.1f, 20.0f );
+	glGetIntegerv(GL_VIEWPORT, viewPort);
 	glMatrixMode(GL_MODELVIEW);
-
+	
 	glLoadIdentity();  
+	glPushMatrix();
 	glTranslatef(0,0,-11);
-
+	
+	glPushMatrix();
+	glTranslatef(0,2,0);
 	CreateButton(&title, "Planetary Golf", 0, 0, 0.01, true); 
+	glPopMatrix();
 
 	if (!earthDrawn) {
 		Planet earth(0,3,0,0,0,0,0,0);
@@ -84,8 +89,8 @@ void CMenuState::display_callback(void) {
 	planets[0].rotateOuterSphere();
 	planets[0].drawPlanet();
 	//RotatePlanetOnMenu();
-	glGetIntegerv(GL_VIEWPORT, viewPort);
 	DrawButtons();
+
 	glPopMatrix();
 }
 
@@ -133,20 +138,22 @@ void CMenuState::CreateButton(TitleText *titleObj, string name, float x, float y
 void CMenuState::DrawButtonBox(float x1, float y1, float x2, float y2) {
 
 	glColor3f(1,1,1);
-	glBegin(GL_LINES);
+	glBegin(GL_QUADS);
 	glVertex2f(x1,y1);
 	glVertex2f(x2, y1);
-	glVertex2f(x2,y1);
+	//glVertex2f(x2,y1);
 	glVertex2f(x2,y2);
-	glVertex2f(x2, y2);
-	glVertex2f(x1, y2);
+	//glVertex2f(x2, y2);
+	//glVertex2f(x1, y2);
 	glVertex2f(x1,y2);
-	glVertex2f(x1,y1);
+	//glVertex2f(x1,y1);
 	glEnd();
 
 }
 
 void CMenuState::selectObjects(int x, int y) {
+
+	glGetIntegerv(GL_VIEWPORT, viewPort);
 
     glSelectBuffer (BUFSIZE, selectBuf);
     (void) glRenderMode (GL_SELECT);
@@ -154,10 +161,13 @@ void CMenuState::selectObjects(int x, int y) {
     glInitNames();
     glPushName(0);
 
+	//std::cout << "x = " << x << " and y = " << y << "\n";
+	//std::cout << "GLUT_WINDOW_HEIGHT = " << glutGet(GLUT_WINDOW_HEIGHT) << "\n";
+
     glMatrixMode (GL_PROJECTION);
     glLoadIdentity();
-	gluPickMatrix((GLdouble)x, (GLdouble)y, 50, 50, viewPort);
-    gluPerspective( 70.0f, float(glutGet(GLUT_WINDOW_WIDTH))/float(glutGet(GLUT_WINDOW_HEIGHT)), 0.1f, 2000.0f );
+	gluPickMatrix((GLdouble)x, (GLdouble)(glutGet(GLUT_WINDOW_HEIGHT)-y), 1, 1, viewPort);
+    gluPerspective( 90.0f, float(glutGet(GLUT_WINDOW_WIDTH))/float(glutGet(GLUT_WINDOW_HEIGHT)), 0.1f, 20.0f );
     glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();  
 	glTranslatef(0,0,-11);

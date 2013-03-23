@@ -140,7 +140,7 @@ void CPlayState::display_callback(void) {
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective( 70.0f, float(glutGet(GLUT_WINDOW_WIDTH))/float(glutGet(GLUT_WINDOW_HEIGHT)), 0.1f, 2000.0f );
+	gluPerspective( 70.0f, float(glutGet(GLUT_WINDOW_WIDTH))/float(glutGet(GLUT_WINDOW_HEIGHT)), 0.1f, 100.0f );
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -162,7 +162,12 @@ void CPlayState::display_callback(void) {
 
 
 	drawPlayArea();
-    
+    glPushMatrix();
+	glTranslatef(0,5,0);
+	GLfloat position2[] = {0.0,0.0,0.0,0.0};
+	glLightfv(GL_LIGHT2, GL_POSITION, position2 );
+	glPopMatrix();
+
     for (int i = 0; i < planets.size(); i++) {
         planets[i].drawPlanet();
         glColor3f(0,0,1);
@@ -175,6 +180,7 @@ void CPlayState::display_callback(void) {
 	CalculateFrameRate();
 
 	DrawHud();
+
 
 }
 
@@ -208,9 +214,29 @@ void CPlayState::idle(int value) {
                 double startZ = planets[i].zInWorld;
                 planets.erase(planets.begin()+i);
 				srand(time(NULL));
-                Planet planet1(rand() % 5, size/2, startX, startY, startZ, 0.2,0.2,0.2);
-                Planet planet2(rand() % 5, size/2, startX, startY, startZ, -0.1,-0.1,0.1);
+
+				double randoms[6];
+				for (int i = 0; i < 3; i++) {
+					double a = (((float)rand() / (float)RAND_MAX) * 0.1);
+					double b = (((float)rand() / (float)RAND_MAX) * 0.1)+0.1;
+					int signA = rand() % 2;
+					int signB = rand() %2;
+
+					if (signA == 1)
+						randoms[i] = -a;
+					else
+						randoms[i] = a;
+
+					if (signB == 1)
+						randoms[i+3] = -b;
+					else
+						randoms[i+3] = b;
+
+				}
+				Planet planet1(rand() % 5, size/2, startX, startY, startZ, randoms[0],randoms[1],randoms[2]);
+                Planet planet2(rand() % 5, size/2, startX, startY, startZ, randoms[3],randoms[4],randoms[5]);
                 
+
                 hasBallBeenFired = false;
                 ball.hardReset();
                 isCameraSaved = false;
@@ -282,14 +308,39 @@ void CPlayState::idle(int value) {
 // they are just black!
 void CPlayState::drawPlayArea() {
 
-	glColor3f(0,0,0);
+   GLubyte imageData[64][64][3]; // Texture image data
+   int value;
+   for (int row = 0; row < 64; row++) {
+      for (int col = 0; col < 64; col++) {
+         // Each cell is 8x8, value is 0 or 255 (black or white)
+         value = (((row & 0x8) == 0) ^ ((col & 0x8) == 0)) * 255;
+         imageData[row][col][0] = (GLubyte)value;
+         imageData[row][col][1] = (GLubyte)value;
+         imageData[row][col][2] = (GLubyte)value;
+      }
+   }
+	//glBindTexture(GL_TEXTURE_2D, _textureId);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, 64, 64, 0, GL_RGB, 
+         GL_UNSIGNED_BYTE, imageData);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	glEnable(GL_TEXTURE_2D);
 	glBegin(GL_QUADS);
 	// Floor
+	glTexCoord2f (0.0f,0.0f);
 	glVertex3f(-30,-30,-18);
+	glTexCoord2f (1.0f,0.0f);
 	glVertex3f(30,-30,-18);
+	glTexCoord2f (1.0f,1.0f);
 	glVertex3f(30,-30,30);
+	glTexCoord2f (0.0f,1.0f);
 	glVertex3f(-30,-30,30);
 	// Ceiling
+	glColor3f(0.5,0.5,0.5);
 	glVertex3f(-30,30,-18);
 	glVertex3f(30,30,-18);
 	glVertex3f(30,30,30);
@@ -315,7 +366,9 @@ void CPlayState::drawPlayArea() {
 	glVertex3f(-30,-30,-18);
 	glVertex3f(-30,30,-18);
 	glEnd();
-	
+
+	glDisable(GL_TEXTURE_2D);
+
 	// Draw top/back wall line
 	drawWallBorder(0,30,-18,60,1,1);
 	// Draw bottom/back wall line
@@ -428,7 +481,7 @@ void CPlayState::DrawHud()
 		// Time Left on HUD
 		glPushMatrix();
         glLoadIdentity();
-        glTranslatef( 10.0f, -90.0f, 0.0f );
+        glTranslatef( -20.0f, 90.0f, 0.0f );
         glScalef( 0.05f, 0.05f, 0.05f );
 
 		char strTimeLeft[2];
@@ -495,3 +548,19 @@ void CPlayState::CalculateFrameRate()
 			framesPerSecondNow = 0;
         }
     }
+GLuint CPlayState::loadTexture(Image* image) {
+
+	GLuint textureId;
+
+	glGenTextures(1, &textureId);
+
+	glBindTexture(GL_TEXTURE_2D, textureId);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+		image->width, image->height,
+		0, GL_RGB, GL_UNSIGNED_BYTE,
+		image->pixels);
+
+	return textureId;
+
+}
